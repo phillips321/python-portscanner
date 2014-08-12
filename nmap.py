@@ -5,12 +5,13 @@
 # Created:      12/08/2014
 # Copyright:    (c) phillipsme 2014
 # Licence:      Free to use, free to have fun!
-# Version:      alpha!!! (0.1)
+# Version:      beta!!! (0.2)
 # ToDo:         add threading
 #-------------------------------------------------------------------------------
 import socket
 import argparse
 import sys
+import time
 
 def main():
     parser = argparse.ArgumentParser(description='nmap.py - Replicates limited nmap functionality in python')
@@ -42,15 +43,18 @@ def main():
     # Output command line args to screen
     if args.verbose: printmsg("Arguments used:"); print args ;
 
+    starttime=time.time()
     # Start Scanning
     for target in targets:
         tcpports, udpports = portscan(target,ports,args.tcpscan,args.udpscan,args.verbose)
+    printmsg(("Total scantime %.2f seconds") % (time.time()-starttime))
 
 def portscan(target,ports,tcp,udp,verbose):
     #target=IPaddr,ports=list of ports,tcp=true/false,udp=true/false,verbose=true/false
     printmsg(("Now scanning %s" % (target)))
     tcpports=[]
     udpports=[]
+    targetstarttime=time.time()
     if tcp:
         for portnum in ports:
             try:
@@ -79,7 +83,8 @@ def portscan(target,ports,tcp,udp,verbose):
                 else:
                     if verbose: print "%d/udp \tclosed" % (portnum)
             s.close()
-    printmsg(("%i open TCP ports, %i open UDP ports of %i ports scanned" % (len(tcpports),len(udpports),len(ports))))
+    printmsg(("%i open TCP ports, %i open UDP ports of %i ports scanned in %.2f seconds" % \
+                (len(tcpports),len(udpports),len(ports),time.time()-targetstarttime)))
     return tcpports, udpports
 
 def errormsg(msg): print "[!] Error: %s" % (msg) ; sys.exit(1)
