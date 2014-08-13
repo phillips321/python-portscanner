@@ -45,13 +45,16 @@ def main():
 
     starttime=time.time()
     # Start Scanning
+    results={}
     for target in targets:
-        tcpports, udpports = portscan(target,ports,args.tcpscan,args.udpscan,args.verbose)
+        results[target]= portscan(target,ports,args.tcpscan,args.udpscan,args.verbose)
     printmsg(("Total scantime %.2f seconds") % (time.time()-starttime))
+
+    for target in results:
+        print "%s TCP:%s  UDP:%s" % (target,results[target][0],results[target][1])
 
 def portscan(target,ports,tcp,udp,verbose):
     #target=IPaddr,ports=list of ports,tcp=true/false,udp=true/false,verbose=true/false
-    printmsg(("Now scanning %s" % (target)))
     tcpports=[]
     udpports=[]
     targetstarttime=time.time()
@@ -65,7 +68,7 @@ def portscan(target,ports,tcp,udp,verbose):
                 failvar = 0
                 if verbose: print "%d/tcp \tclosed" % (portnum)
             else:
-                print "%d/tcp \topen"% (portnum)
+                if verbose: print "%d/tcp \topen"% (portnum)
                 tcpports.append(portnum)
             s.close()
     if udp:
@@ -78,13 +81,13 @@ def portscan(target,ports,tcp,udp,verbose):
             except Exception, e:
                 try: errno, errtxt = e
                 except ValueError:
-                    print "%d/udp \topen"% (portnum)
+                    if verbose: print "%d/udp \topen"% (portnum)
                     udpports.append(portnum)
                 else:
                     if verbose: print "%d/udp \tclosed" % (portnum)
             s.close()
-    printmsg(("%i open TCP ports, %i open UDP ports of %i ports scanned in %.2f seconds" % \
-                (len(tcpports),len(udpports),len(ports),time.time()-targetstarttime)))
+    printmsg(("Scanned %s in %.2f seconds - Open: %iTCP, %iUDP" % \
+                (target,time.time()-targetstarttime,len(tcpports),len(udpports))))
     return tcpports, udpports
 
 def errormsg(msg): print "[!] Error: %s" % (msg) ; sys.exit(1)
